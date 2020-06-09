@@ -2,44 +2,34 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-replicaCount: 1
-
-image:
-  repository: nginx
-  tag: stable
-  pullPolicy: IfNotPresent
-
-service:
-  type: ClusterIP
-  port: 80
-
-ingress:
-  enabled: false
-  annotations: {}
-    # kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: "true"
-  path: /
-  hosts:
-    - chart-example.local
-  tls: []
-  #  - secretName: chart-example-tls
-  #    hosts:
-  #      - chart-example.local
-
-resources: {}
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #  cpu: 100m
-  #  memory: 128Mi
-  # requests:
-  #  cpu: 100m
-  #  memory: 128Mi
-
-nodeSelector: {}
-
-tolerations: []
-
-affinity: {}
+apps:
+- name: keycloak
+  project: "default"
+  source:
+    repoURL: "https://codecentric.github.io/helm-charts"
+    chart: keycloak
+    targetRevision: 6.2.0
+    helm:
+      valueFiles:
+        - values.yaml
+      # values: |-
+      #   key: value
+      parameters:
+        keycloak.serviceAccount.create: true
+  destinations:
+  - server: "https://kubernetes.default.svc"
+    namesapce: keycloak
+    name: "1"
+    source:
+      helm:
+        valueFiles:
+          - values-env.yaml
+        parameters:
+          keycloak.ingress.enabled: true
+  - server: "https://kubernetes.default.svc"
+    namesapce: keycloak2
+    name: "2"
+    source:
+      helm:
+        parameters:
+          postgresql.persistence.enabled: true
