@@ -2,34 +2,66 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
+template:
+  keycloak:
+    project: "default"
+    source:
+      repoURL: "https://codecentric.github.io/helm-charts"
+      chart: keycloak
+      targetRevision: 6.2.0
+      helm:
+        # valueFiles:
+        #   - values.yaml
+        # values: |-
+        #   key: value
+        parameters:
+          keycloak.serviceAccount.create: true
+    destination:
+      server: "https://kubernetes.default.svc"
+      namespace: keycloak
+  jenkins:
+    project: "default"
+    source:
+      repoURL: "https://codecentric.github.io/helm-charts"
+      chart: jenkins
+      targetRevision: 2.12.0
+      helm:
+        parameters:
+          jenkins.admin.user: admin
+    destination:
+      server: "https://kubernetes.default.svc"
+      namespace: jenkins
+
 apps:
-- name: keycloak
-  project: "default"
+- name: keycloak-1
+  template: keycloak
+  # helm-parameters:
+  #   keycloak.ingress.enabled: true
   source:
-    repoURL: "https://codecentric.github.io/helm-charts"
-    chart: keycloak
-    targetRevision: 6.2.0
     helm:
-      valueFiles:
-        - values.yaml
-      # values: |-
-      #   key: value
       parameters:
-        keycloak.serviceAccount.create: true
-  destinations:
-  - server: "https://kubernetes.default.svc"
-    namesapce: keycloak
-    name: "1"
-    source:
-      helm:
-        valueFiles:
-          - values-env.yaml
-        parameters:
-          keycloak.ingress.enabled: true
-  - server: "https://kubernetes.default.svc"
-    namesapce: keycloak2
-    name: "2"
-    source:
-      helm:
-        parameters:
-          postgresql.persistence.enabled: true
+        keycloak.ingress.enabled: true
+# - name: keycloak-2
+- template: keycloak
+  # namespace: keycloak2
+  # helm-parameters:
+  #   keycloak.ingress.enabled: true
+  source:
+    helm:
+      parameters:
+        postgresql.persistence.enabled: true
+  destination:
+    namespace: keycloak2
+- name: jenkins-1
+  template: jenkins
+  source:
+    helm:
+      parameters:
+        jenkins.admin.password: xxxyyy
+- name: jenkins-2
+  template: jenkins
+  source:
+    helm:
+      parameters:
+        jenkins.admin.user: jenkins
+        jenkins.admin.password: jenkins!23$

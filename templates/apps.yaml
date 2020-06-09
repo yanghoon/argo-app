@@ -3,25 +3,18 @@
 # https://github.com/Masterminds/sprig/blob/master/docs/dicts.md#merge-mustmerge
 */}}
 {{- $root := . }}
-{{- range $app := .Values.apps }}
-{{- range $index, $dest := $app.destinations }}
+{{- $tpl  := .Values.template }}
+{{- range $index, $app := .Values.apps }}
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: {{ ($dest.name | default $index) | printf "%s-%s-%s" $root.Release.Name $app.name }}
+  name: {{ $app.name | default ($index | toString) | printf "%s-%s" $root.Release.Name  }}
   labels:
-    app: {{ template "argo-app.name" $root }}
     chart: {{ template "argo-app.chart" $root }}
     release: {{ $root.Release.Name }}
-    heritage: {{ $root.Release.Service }}
+{{- $merged := index $tpl $app.template }}
+{{- $merged := merge dict (omit $app "name" "template") $merged }}
 spec:
-  project: {{ $app.project | default "default" }}
-  source:
-{{- $merged := merge dict $app.source $dest.source }}
-{{ toYaml $merged | indent 4 }}
-  destination:
-    server: {{ $dest.server }}
-    namesapce: {{ $dest.namesapce }}
+{{ toYaml $merged | indent 2 }}
 ---
-{{- end }}
 {{- end }}
