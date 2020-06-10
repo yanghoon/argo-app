@@ -30,3 +30,29 @@ Create chart name and version as used by the chart label.
 {{- define "argo-app.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
+
+{{- define "unpack" -}}
+{{- with . -}}
+parameters:
+  {{- range $name, $value := . }}
+  - name: {{ $name }}
+    value: {{ $value }}
+  {{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "valueFiles" -}}
+{{- with . -}}
+valueFiles:
+  {{- range $file := . }}
+  - {{ $file }}
+  {{- end -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "values" -}}
+{{- with . -}}
+values: |-
+  {{ . }}
+{{- end -}}
+{{- end -}}

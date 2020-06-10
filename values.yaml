@@ -2,66 +2,50 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-template:
-  keycloak:
-    project: "default"
-    source:
-      repoURL: "https://codecentric.github.io/helm-charts"
-      chart: keycloak
-      targetRevision: 6.2.0
-      helm:
-        # valueFiles:
-        #   - values.yaml
-        # values: |-
-        #   key: value
-        parameters:
-          keycloak.serviceAccount.create: true
-    destination:
-      server: "https://kubernetes.default.svc"
-      namespace: keycloak
-  jenkins:
-    project: "default"
-    source:
-      repoURL: "https://codecentric.github.io/helm-charts"
-      chart: jenkins
-      targetRevision: 2.12.0
-      helm:
-        parameters:
-          jenkins.admin.user: admin
-    destination:
-      server: "https://kubernetes.default.svc"
-      namespace: jenkins
+global:
+  project: default
+  server: https://kubernetes.default.svc
+  namespace: mongo
 
 apps:
-- name: keycloak-1
-  template: keycloak
-  # helm-parameters:
-  #   keycloak.ingress.enabled: true
-  source:
-    helm:
-      parameters:
-        keycloak.ingress.enabled: true
-# - name: keycloak-2
-- template: keycloak
-  # namespace: keycloak2
-  # helm-parameters:
-  #   keycloak.ingress.enabled: true
-  source:
-    helm:
-      parameters:
-        postgresql.persistence.enabled: true
-  destination:
-    namespace: keycloak2
-- name: jenkins-1
-  template: jenkins
-  source:
-    helm:
-      parameters:
-        jenkins.admin.password: xxxyyy
-- name: jenkins-2
-  template: jenkins
-  source:
-    helm:
-      parameters:
-        jenkins.admin.user: jenkins
-        jenkins.admin.password: jenkins!23$
+  # Simple ver.
+  mongodb:
+    valueFiles:
+      - monogodb.yaml
+    parameters:
+      replicaSet.enabled: false
+
+  # Full ver.
+  mongodb-2:
+    template: mongodb
+
+    # Environment Config
+    project: eks
+    server: https://my.eks.apiserver:443
+    namespace: database
+
+    # source.helm.valueFiles
+    valueFiles:
+      - mongodb.yaml
+      - mongodb-eks.yaml
+
+    # source.helm.parameters[0] = {name,value}
+    parameters:
+      replicaSet.enabled: true
+      replicaSet.name: rs
+
+template:
+  mongodb:
+    # ArgoCD Application Sepc using Helm
+    project: default
+    source:
+      repoURL: https://kubernetes-charts.storage.googleapis.com
+      chart: monogodb
+      targetRevision: 7.8.10
+      helm:
+        parameters:
+          replicaSet.enabled: false
+          replicaSet.name: rs0
+    destination:
+      server: "https://kubernetes.default.svc"
+      namespace: mongo

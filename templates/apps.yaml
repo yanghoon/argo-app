@@ -2,19 +2,30 @@
 # https://helm.sh/docs/chart_template_guide/functions_and_pipelines/
 # https://github.com/Masterminds/sprig/blob/master/docs/dicts.md#merge-mustmerge
 */}}
-{{- $root := . }}
-{{- $tpl  := .Values.template }}
-{{- range $index, $app := .Values.apps }}
+{{- $r := . }}
+{{- $v := .Values }}
+{{- $g := .Values.global }}
+{{- $t := .Values.template }}
+{{- range $name, $app := .Values.apps }}
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: {{ $app.name | default ($index | toString) | printf "%s-%s" $root.Release.Name  }}
+  name: {{ printf "%s-%s" $r.Release.Name $name  }}
   labels:
-    chart: {{ template "argo-app.chart" $root }}
-    release: {{ $root.Release.Name }}
-{{- $merged := index $tpl $app.template }}
-{{- $merged := merge dict (omit $app "name" "template") $merged }}
+    chart: {{ template "argo-app.chart" $r }}
+    release: {{ $r.Release.Name }}
+{{- $m := index $t ($app.template | default $name) }}
+{{- $m := merge dict (omit $app "template") $m }}
 spec:
-{{ toYaml $merged | indent 2 }}
+  project: {{ $m.project | default $g.project }}
+  source:
+{{ toYaml (pick $m.source "repoURL" "chart" "targetRevision") | indent 4 }}
+    helm:
+{{ include "valueFiles" $m.valueFiles | indent 6 }}
+{{ include "values" $m.values| indent 6 }}
+{{ include "unpack" $m.parameters | indent 6 }}
+  destination:
+    server: {{ $m.server | default $g.server }}
+    namespace: {{ $m.namespace | default $m.namespace }}
 ---
 {{- end }}
