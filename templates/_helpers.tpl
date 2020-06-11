@@ -2,6 +2,10 @@
 {{/*
 Expand the name of the chart.
 */}}
+{{/*
+  https://godoc.org/text/template
+  https://masterminds.github.io/sprig/
+*/}}
 {{- define "argo-app.name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
@@ -32,27 +36,41 @@ Create chart name and version as used by the chart label.
 {{- end -}}
 
 {{- define "unpack" -}}
-{{- with . -}}
-parameters:
-  {{- range $name, $value := . }}
-  - name: {{ $name }}
-    value: {{ $value }}
-  {{- end -}}
-{{- end -}}
+{{- range $name, $value := . }}
+- name: {{ $name }}
+  value: {{ $value }}
+{{- end }}
 {{- end -}}
 
 {{- define "valueFiles" -}}
-{{- with . -}}
-valueFiles:
-  {{- range $file := . }}
-  - {{ $file }}
+{{- with (include "filterValueFiles" .valueFiles ) -}}
+{{ . }}
+{{- end -}}
+{{- end -}}
+
+{{- define "filterValueFiles" -}}
+{{- range $file := . }}
+  {{- if not (hasPrefix "values/" $file) -}}
+- {{ $file }}
   {{- end -}}
 {{- end -}}
 {{- end -}}
 
 {{- define "values" -}}
-{{- with . -}}
-values: |-
-  {{ . }}
+  {{- $root := .root -}}
+  {{- $values := .values | default (include "mergeValueFiles" .) -}}
+  {{- with $values -}}
+{{ . }}
+  {{- end -}}
 {{- end -}}
+
+{{- define "mergeValueFiles" -}}
+{{- $root := .root -}}
+{{- $_ := set $ "v" dict -}}
+{{- range $f := .valueFiles -}}
+  {{- if hasPrefix "values/" $f }}
+{{- $_ := set $ "v" (merge ($root.Files.Get $f | fromYaml) $.v) -}}
+  {{- end }}
+{{- end -}}
+{{ .v | toYaml | trim }}
 {{- end -}}

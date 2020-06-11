@@ -26,8 +26,8 @@ apps:
 
     # source.helm.valueFiles
     valueFiles:
-      - mongodb.yaml
-      - mongodb-eks.yaml
+      - values/mongodb.yaml
+      - values/mongodb-eks.yaml
 
     # source.helm.parameters[0] = {name,value}
     parameters:
