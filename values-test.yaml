@@ -1,0 +1,51 @@
+# Default values for argo-app.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+global:
+  project: default
+  server: https://kubernetes.default.svc
+  namespace: mongo
+
+apps:
+  # Simple ver.
+  mongodb:
+    valueFiles:
+      - monogodb.yaml
+    parameters:
+      replicaSet.enabled: false
+
+  # Full ver.
+  mongodb-2:
+    template: mongodb
+
+    # Environment Config
+    project: eks
+    server: https://my.eks.apiserver:443
+    namespace: database
+
+    # source.helm.valueFiles
+    valueFiles:
+      - values/mongodb.yaml
+      - values/mongodb-eks.yaml
+
+    # source.helm.parameters[0] = {name,value}
+    parameters:
+      replicaSet.enabled: true
+      replicaSet.name: rs
+
+template:
+  mongodb:
+    # ArgoCD Application Sepc using Helm
+    project: default
+    source:
+      repoURL: https://kubernetes-charts.storage.googleapis.com
+      chart: monogodb
+      targetRevision: 7.8.10
+      helm:
+        parameters:
+          replicaSet.enabled: false
+          replicaSet.name: rs0
+    destination:
+      server: "https://kubernetes.default.svc"
+      namespace: mongo

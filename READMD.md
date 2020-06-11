@@ -5,10 +5,10 @@ helm search argo-app
 NAME          	CHART VERSION	APP VERSION	DESCRIPTION                        
 hoon/argo-app 	0.1.0        	1.5.5      	A Helm chart for ArgoCD Application
 
-helm install hoon/argo-app -n test --dry-run --debug
+helm install hoon/argo-app -f values.yaml -n test --dry-run --debug
 
 ```
 ## Test
 ```bash
-helm template . -n console
+helm template . -f values-test.yaml -n console
 ```
