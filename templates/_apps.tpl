@@ -36,7 +36,7 @@ spec:
     {{- end }}
   destination:
     server: {{ $m.server | default $g.server }}
-    namespace: {{ $m.namespace | default $m.namespace }}
+    namespace: {{ $m.namespace | default $g.namespace }}
 ---
 {{- end }}
 {{- end -}}
