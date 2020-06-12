@@ -14,21 +14,21 @@
 #       - monogodb.yaml
 #     parameters:
 #       replicaSet.enabled: false
-
+#
 #   # Full ver.
 #   mongodb-2:
 #     template: mongodb
-
+#
 #     # Environment Config
 #     project: eks
 #     server: https://my.eks.apiserver:443
 #     namespace: database
-
+#
 #     # source.helm.valueFiles
 #     valueFiles:
 #       - values/mongodb.yaml
 #       - values/mongodb-eks.yaml
-
+#
 #     # source.helm.parameters[0] = {name,value}
 #     parameters:
 #       replicaSet.enabled: true

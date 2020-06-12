@@ -19,5 +19,7 @@
 .project
 .idea/
 *.tmproj
-# Documents
+# 
 README.md
+values/
+values-test.yaml
