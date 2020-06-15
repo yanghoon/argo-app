@@ -16,6 +16,7 @@
 #   # Full ver.
 #   mongodb-2:
 #     template: mongodb
+#     enabled: true
 #
 #     # Environment Config
 #     project: aks

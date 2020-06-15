@@ -7,6 +7,7 @@
 {{- $g := .Values.global }}
 {{- $t := .Values.template }}
 {{- range $name, $app := .Values.apps }}
+{{- if ne (toString $app.enabled) "false" }}
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -41,5 +42,6 @@ spec:
     server: {{ $m.destination.server | default $g.server }}
     namespace: {{ $m.destination.namespace | default $g.namespace }}
 ---
+{{- end }}
 {{- end }}
 {{- end -}}
