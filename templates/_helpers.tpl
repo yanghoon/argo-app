@@ -37,8 +37,8 @@ Create chart name and version as used by the chart label.
 
 {{- define "unpack" -}}
 {{- range $name, $value := . }}
-- name: {{ $name }}
-  value: {{ $value }}
+- name: "{{ $name }}"
+  value: "{{ $value }}"
 {{- end }}
 {{- end -}}
 
