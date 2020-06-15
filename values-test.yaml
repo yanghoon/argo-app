@@ -10,8 +10,6 @@ global:
 apps:
   # Simple ver.
   mongodb:
-    valueFiles:
-      - monogodb.yaml
     parameters:
       replicaSet.enabled: false
 
@@ -20,14 +18,22 @@ apps:
     template: mongodb
 
     # Environment Config
-    project: eks
-    server: https://my.eks.apiserver:443
+    project: aks
+    server: https://my.aks.apiserver:443
     namespace: database
 
-    # source.helm.valueFiles
+    # source.helm.valueFiles[]
     valueFiles:
       - values/mongodb.yaml
-      - values/mongodb-eks.yaml
+      - values/mongodb-aks.yaml
+
+    # source.helm.values
+    # values: |-
+    #   fill:
+    #     your: "values self"
+    #   will:
+    #     be:
+    #       ignored: all values/**.yaml in valueFiles[]
 
     # source.helm.parameters[0] = {name,value}
     parameters:
@@ -44,6 +50,9 @@ template:
       targetRevision: 7.8.10
       helm:
         parameters:
+          # Convert to the argocd CRD style
+          # - name: key
+          #   value: value
           replicaSet.enabled: false
           replicaSet.name: rs0
     destination:

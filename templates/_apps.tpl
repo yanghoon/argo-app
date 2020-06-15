@@ -14,9 +14,12 @@ metadata:
   labels:
     chart: {{ template "argo-app.chart" $ }}
     release: {{ $.Release.Name }}
+{{- $helm := pick $app "values" "valueFiles" "parameters" }}
+{{- $source := merge (pick $app "repoURL" "chart" "targetRevision") (dict "helm" $helm) }}
+{{- $destination := pick $app "server" "namespace" }}
 {{- $m := index $t ($app.template | default $name) }}
-{{- $m := merge dict (omit $app "template") $m }}
-{{- $values := dict "values" $m.values "valueFiles" $m.valueFiles "root" $ }}
+{{- $m := merge dict (dict "source" $source "destination" $destination) $m }}
+{{- $values := dict "values" $m.source.helm.values "valueFiles" $m.source.helm.valueFiles "root" $ }}
 spec:
   project: {{ $m.project | default $g.project }}
   source:
@@ -30,13 +33,13 @@ spec:
       values: |-
 {{ . | indent 8 }}
     {{- end }}
-    {{- with (include "unpack" $m.parameters) }}
+    {{- with (include "unpack" $m.source.helm.parameters) }}
       parameters:
 {{ . | trim | indent 6 }}
     {{- end }}
   destination:
-    server: {{ $m.server | default $g.server }}
-    namespace: {{ $m.namespace | default $g.namespace }}
+    server: {{ $m.destination.server | default $g.server }}
+    namespace: {{ $m.destination.namespace | default $g.namespace }}
 ---
 {{- end }}
 {{- end -}}

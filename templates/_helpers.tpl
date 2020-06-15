@@ -69,8 +69,12 @@ Create chart name and version as used by the chart label.
 {{- $_ := set $ "v" dict -}}
 {{- range $f := .valueFiles -}}
   {{- if hasPrefix "values/" $f }}
-{{- $_ := set $ "v" (merge ($root.Files.Get $f | fromYaml) $.v) -}}
+    {{- with ($root.Files.Glob $f) -}}
+{{- $_ := set $ "v" (merge (index . $f | toString | fromYaml) $.v) -}}
+    {{- end -}}
   {{- end }}
 {{- end -}}
-{{ .v | toYaml | trim }}
+{{- with .v -}}
+{{ . | toYaml | trim }}
+{{- end -}}
 {{- end -}}
